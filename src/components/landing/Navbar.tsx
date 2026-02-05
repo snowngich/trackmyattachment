@@ -1,4 +1,5 @@
-import { useState } from "react";
+ import { useState } from "react";
+ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X, GraduationCap } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -40,15 +41,19 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Desktop CTA */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Button variant="ghost" className="font-medium">
-              Sign In
-            </Button>
-            <Button className="bg-gradient-primary hover:opacity-90 transition-opacity font-semibold shadow-md">
-              Get Started
-            </Button>
-          </div>
+           {/* Desktop CTA */}
+           <div className="hidden lg:flex items-center gap-3">
+             <Link to="/login">
+               <Button variant="ghost" className="font-medium">
+                 Sign In
+               </Button>
+             </Link>
+             <Link to="/signup">
+               <Button className="bg-gradient-primary hover:opacity-90 transition-opacity font-semibold shadow-md">
+                 Get Started
+               </Button>
+             </Link>
+           </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -80,14 +85,18 @@ const Navbar = () => {
                   {link.label}
                 </a>
               ))}
-              <div className="flex flex-col gap-3 pt-4 border-t border-border">
-                <Button variant="outline" className="w-full font-medium">
-                  Sign In
-                </Button>
-                <Button className="w-full bg-gradient-primary font-semibold">
-                  Get Started
-                </Button>
-              </div>
+               <div className="flex flex-col gap-3 pt-4 border-t border-border">
+                 <Link to="/login" onClick={() => setIsOpen(false)}>
+                   <Button variant="outline" className="w-full font-medium">
+                     Sign In
+                   </Button>
+                 </Link>
+                 <Link to="/signup" onClick={() => setIsOpen(false)}>
+                   <Button className="w-full bg-gradient-primary font-semibold">
+                     Get Started
+                   </Button>
+                 </Link>
+               </div>
             </div>
           </motion.div>
         )}

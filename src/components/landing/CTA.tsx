@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+ import { Link } from "react-router-dom";
 import { ArrowRight, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -31,24 +32,27 @@ const CTA = () => {
                 TrackMyAttachment to streamline their industrial attachment management.
               </p>
 
-              {/* Email form */}
-              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto mb-8">
-                <div className="flex-1 relative">
-                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                  <input
-                    type="email"
-                    placeholder="Enter your institutional email"
-                    className="w-full h-12 pl-12 pr-4 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  />
-                </div>
-                <Button 
-                  size="lg" 
-                  className="bg-gradient-primary hover:opacity-90 transition-opacity font-semibold h-12 px-6 shadow-lg shadow-primary/25"
-                >
-                  Request Demo
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
+               {/* CTA Buttons */}
+               <div className="flex flex-col sm:flex-row gap-3 justify-center mb-8">
+                 <Link to="/signup">
+                   <Button 
+                     size="lg" 
+                     className="bg-gradient-primary hover:opacity-90 transition-opacity font-semibold h-12 px-8 shadow-lg shadow-primary/25"
+                   >
+                     Get Started Free
+                     <ArrowRight className="w-4 h-4 ml-2" />
+                   </Button>
+                 </Link>
+                 <Link to="/login">
+                   <Button 
+                     size="lg" 
+                     variant="outline"
+                     className="h-12 px-8 font-semibold"
+                   >
+                     Sign In
+                   </Button>
+                 </Link>
+               </div>
 
               <p className="text-sm text-muted-foreground">
                 Free 30-day trial • No credit card required • Cancel anytime

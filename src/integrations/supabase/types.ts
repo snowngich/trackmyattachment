@@ -14,16 +14,322 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      attachments: {
+        Row: {
+          company_id: string
+          coordinator_id: string | null
+          created_at: string
+          department_id: string | null
+          end_date: string
+          id: string
+          start_date: string
+          status: Database["public"]["Enums"]["attachment_status"]
+          student_id: string
+          supervisor_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          coordinator_id?: string | null
+          created_at?: string
+          department_id?: string | null
+          end_date: string
+          id?: string
+          start_date: string
+          status?: Database["public"]["Enums"]["attachment_status"]
+          student_id: string
+          supervisor_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          coordinator_id?: string | null
+          created_at?: string
+          department_id?: string | null
+          end_date?: string
+          id?: string
+          start_date?: string
+          status?: Database["public"]["Enums"]["attachment_status"]
+          student_id?: string
+          supervisor_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "attachments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "attachments_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          organization_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          organization_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      feedback: {
+        Row: {
+          author_id: string
+          comment: string
+          created_at: string
+          id: string
+          log_id: string
+        }
+        Insert: {
+          author_id: string
+          comment: string
+          created_at?: string
+          id?: string
+          log_id: string
+        }
+        Update: {
+          author_id?: string
+          comment?: string
+          created_at?: string
+          id?: string
+          log_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      log_files: {
+        Row: {
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          log_id: string
+          uploaded_at: string
+        }
+        Insert: {
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          log_id: string
+          uploaded_at?: string
+        }
+        Update: {
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          log_id?: string
+          uploaded_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_files_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logs: {
+        Row: {
+          attachment_id: string
+          content: string
+          created_at: string
+          id: string
+          submitted_at: string | null
+          updated_at: string
+          week_number: number
+        }
+        Insert: {
+          attachment_id: string
+          content: string
+          created_at?: string
+          id?: string
+          submitted_at?: string | null
+          updated_at?: string
+          week_number: number
+        }
+        Update: {
+          attachment_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          submitted_at?: string | null
+          updated_at?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logs_attachment_id_fkey"
+            columns: ["attachment_id"]
+            isOneToOne: false
+            referencedRelation: "attachments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          name: string
+          type: Database["public"]["Enums"]["organization_type"]
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          type: Database["public"]["Enums"]["organization_type"]
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          type?: Database["public"]["Enums"]["organization_type"]
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          department_id: string | null
+          full_name: string
+          id: string
+          organization_id: string | null
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          department_id?: string | null
+          full_name: string
+          id?: string
+          organization_id?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string | null
+          full_name?: string
+          id?: string
+          organization_id?: string | null
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_profile: { Args: { _user_id: string }; Returns: string }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: { Args: never; Returns: boolean }
+      is_coordinator: { Args: never; Returns: boolean }
+      is_coordinator_of_attachment: {
+        Args: { _attachment_id: string }
+        Returns: boolean
+      }
+      is_log_owner: { Args: { _log_id: string }; Returns: boolean }
+      is_student: { Args: never; Returns: boolean }
+      is_supervisor: { Args: never; Returns: boolean }
+      is_supervisor_of_attachment: {
+        Args: { _attachment_id: string }
+        Returns: boolean
+      }
+      is_supervisor_of_log: { Args: { _log_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "student" | "supervisor" | "coordinator" | "admin"
+      attachment_status: "pending" | "active" | "completed" | "rejected"
+      organization_type: "university" | "company"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +456,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["student", "supervisor", "coordinator", "admin"],
+      attachment_status: ["pending", "active", "completed", "rejected"],
+      organization_type: ["university", "company"],
+    },
   },
 } as const

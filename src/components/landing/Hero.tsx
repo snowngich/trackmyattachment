@@ -1,5 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight, PlayCircle, CheckCircle2 } from "lucide-react";
+ import { Link } from "react-router-dom";
+ import { Button } from "@/components/ui/button";
+ import { ArrowRight, PlayCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Hero = () => {
@@ -60,15 +61,17 @@ const Hero = () => {
               ))}
             </div>
 
-            {/* CTAs */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button 
-                size="lg" 
-                className="bg-gradient-primary hover:opacity-90 transition-opacity font-semibold text-base h-12 px-8 shadow-lg shadow-primary/25"
-              >
-                Start Free Trial
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+             {/* CTAs */}
+             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+               <Link to="/signup">
+                 <Button 
+                   size="lg" 
+                   className="bg-gradient-primary hover:opacity-90 transition-opacity font-semibold text-base h-12 px-8 shadow-lg shadow-primary/25"
+                 >
+                   Start Free Trial
+                   <ArrowRight className="w-4 h-4 ml-2" />
+                 </Button>
+               </Link>
               <Button 
                 size="lg" 
                 variant="outline" 
