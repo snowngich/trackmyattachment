@@ -7,8 +7,10 @@
  import { Textarea } from "@/components/ui/textarea";
  import { Label } from "@/components/ui/label";
  import { Input } from "@/components/ui/input";
- import { useToast } from "@/hooks/use-toast";
- import { ArrowLeft, Save, Send, Upload, Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { logSchema } from "@/lib/validation";
+import { ArrowLeft, Save, Send, Upload, Loader2 } from "lucide-react";
  
  interface Attachment {
    id: string;
@@ -68,68 +70,69 @@
        return;
      }
  
-     if (!content.trim()) {
-       toast({
-         title: "Content required",
-         description: "Please enter your weekly log content.",
-         variant: "destructive",
-       });
-       return;
-     }
- 
-     submit ? setIsSubmitting(true) : setIsSaving(true);
- 
-     try {
-       const { data: log, error } = await supabase
-         .from("logs")
-         .insert({
-           attachment_id: attachment.id,
-           week_number: weekNumber,
-           content: content.trim(),
-           submitted_at: submit ? new Date().toISOString() : null,
-         })
-         .select()
-         .single();
- 
-       if (error) throw error;
- 
-       // Upload files if any
-       if (files.length > 0 && log) {
-         const { data: { user } } = await supabase.auth.getUser();
-         if (user) {
-           for (const file of files) {
-             const filePath = `${user.id}/${log.id}/${file.name}`;
-             const { error: uploadError } = await supabase.storage
-               .from("documents")
-               .upload(filePath, file);
- 
-             if (!uploadError) {
-               await supabase.from("log_files").insert({
-                 log_id: log.id,
-                 file_name: file.name,
-                 file_path: filePath,
-                 file_size: file.size,
-               });
-             }
-           }
-         }
-       }
- 
-       toast({
-         title: submit ? "Log submitted!" : "Log saved!",
-         description: submit
-           ? "Your weekly log has been submitted for review."
-           : "Your draft has been saved.",
-       });
- 
-       navigate("/student/logs");
-     } catch (error: any) {
-       toast({
-         title: "Error",
-         description: error.message,
-         variant: "destructive",
-       });
-     } finally {
+      const validation = logSchema.safeParse({ content, week_number: weekNumber });
+      if (!validation.success) {
+        toast({
+          title: "Validation error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      submit ? setIsSubmitting(true) : setIsSaving(true);
+
+      try {
+        const { data: log, error } = await supabase
+          .from("logs")
+          .insert({
+            attachment_id: attachment.id,
+            week_number: validation.data.week_number,
+            content: validation.data.content,
+            submitted_at: submit ? new Date().toISOString() : null,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Upload files if any
+        if (files.length > 0 && log) {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+            for (const file of files) {
+              const filePath = `${user.id}/${log.id}/${file.name}`;
+              const { error: uploadError } = await supabase.storage
+                .from("documents")
+                .upload(filePath, file);
+
+              if (!uploadError) {
+                await supabase.from("log_files").insert({
+                  log_id: log.id,
+                  file_name: file.name,
+                  file_path: filePath,
+                  file_size: file.size,
+                });
+              }
+            }
+          }
+        }
+
+        toast({
+          title: submit ? "Log submitted!" : "Log saved!",
+          description: submit
+            ? "Your weekly log has been submitted for review."
+            : "Your draft has been saved.",
+        });
+
+        navigate("/student/logs");
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+      } finally {
        setIsSaving(false);
        setIsSubmitting(false);
      }
@@ -195,13 +198,15 @@
  
              <div className="space-y-2">
                <Label htmlFor="content">Log Content</Label>
-               <Textarea
-                 id="content"
-                 value={content}
-                 onChange={(e) => setContent(e.target.value)}
-                 placeholder="Describe what you worked on this week, what you learned, challenges faced, and any other relevant experiences..."
-                 className="min-h-[300px] resize-y"
-               />
+                <Textarea
+                  id="content"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Describe what you worked on this week, what you learned, challenges faced, and any other relevant experiences..."
+                  className="min-h-[300px] resize-y"
+                  maxLength={5000}
+                />
+                <p className="text-xs text-muted-foreground text-right">{content.length}/5000</p>
              </div>
  
              <div className="space-y-2">

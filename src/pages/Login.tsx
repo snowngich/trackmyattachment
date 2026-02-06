@@ -1,13 +1,15 @@
- import { useState } from "react";
- import { useNavigate, Link } from "react-router-dom";
- import { useAuth } from "@/contexts/AuthContext";
- import { getRoleDashboardPath } from "@/lib/supabase";
- import AuthLayout from "@/components/auth/AuthLayout";
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Label } from "@/components/ui/label";
- import { useToast } from "@/hooks/use-toast";
- import { Loader2, Mail, Lock } from "lucide-react";
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { getRoleDashboardPath } from "@/lib/supabase";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { loginSchema } from "@/lib/validation";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Mail, Lock } from "lucide-react";
  
  const Login = () => {
    const [email, setEmail] = useState("");
@@ -17,21 +19,32 @@
    const navigate = useNavigate();
    const { toast } = useToast();
  
-   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setIsLoading(true);
- 
-     const { error } = await signIn(email, password);
- 
-     if (error) {
-       toast({
-         title: "Login failed",
-         description: error.message,
-         variant: "destructive",
-       });
-       setIsLoading(false);
-       return;
-     }
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      const validation = loginSchema.safeParse({ email, password });
+      if (!validation.success) {
+        toast({
+          title: "Validation error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+
+      const { error } = await signIn(email, password);
+
+      if (error) {
+        toast({
+          title: "Login failed",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
  
      toast({
        title: "Welcome back!",

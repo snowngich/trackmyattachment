@@ -7,16 +7,18 @@
  import { Textarea } from "@/components/ui/textarea";
  import { Badge } from "@/components/ui/badge";
  import { Avatar, AvatarFallback } from "@/components/ui/avatar";
- import { useToast } from "@/hooks/use-toast";
- import { 
-   ArrowLeft, 
-   Send, 
-   Loader2,
-   FileText,
-   Calendar,
-   Paperclip,
-   MessageSquare
- } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { feedbackSchema } from "@/lib/validation";
+import { 
+    ArrowLeft, 
+    Send, 
+    Loader2,
+    FileText,
+    Calendar,
+    Paperclip,
+    MessageSquare
+  } from "lucide-react";
  import { format } from "date-fns";
  
  interface Log {
@@ -130,52 +132,62 @@
      fetchData();
    }, [logId]);
  
-   const handleSubmitFeedback = async () => {
-     if (!newFeedback.trim() || !logId) return;
- 
-     setIsSubmitting(true);
- 
-     try {
-       const { data: { user } } = await supabase.auth.getUser();
-       if (!user) throw new Error("Not authenticated");
- 
-       const { error } = await supabase.from("feedback").insert({
-         log_id: logId,
-         author_id: user.id,
-         comment: newFeedback.trim(),
-       });
- 
-       if (error) throw error;
- 
-       toast({
-         title: "Feedback submitted!",
-         description: "Your feedback has been sent to the student.",
-       });
- 
-       // Refresh feedback list
-       const { data: profile } = await supabase
-         .from("profiles")
-         .select("full_name")
-         .eq("user_id", user.id)
-         .single();
- 
-       setFeedback([
-         ...feedback,
-         {
-           id: Date.now().toString(),
-           comment: newFeedback.trim(),
-           created_at: new Date().toISOString(),
-           author: { full_name: profile?.full_name || "You" },
-         },
-       ]);
-       setNewFeedback("");
-     } catch (error: any) {
-       toast({
-         title: "Error",
-         description: error.message,
-         variant: "destructive",
-       });
-     } finally {
+    const handleSubmitFeedback = async () => {
+      if (!logId) return;
+
+      const validation = feedbackSchema.safeParse({ comment: newFeedback });
+      if (!validation.success) {
+        toast({
+          title: "Validation error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
+
+        const { error } = await supabase.from("feedback").insert({
+          log_id: logId,
+          author_id: user.id,
+          comment: validation.data.comment,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Feedback submitted!",
+          description: "Your feedback has been sent to the student.",
+        });
+
+        // Refresh feedback list
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("user_id", user.id)
+          .single();
+
+        setFeedback([
+          ...feedback,
+          {
+            id: Date.now().toString(),
+            comment: validation.data.comment,
+            created_at: new Date().toISOString(),
+            author: { full_name: profile?.full_name || "You" },
+          },
+        ]);
+        setNewFeedback("");
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+      } finally {
        setIsSubmitting(false);
      }
    };
@@ -299,12 +311,14 @@
                  )}
  
                  <div className="space-y-3">
-                   <Textarea
-                     value={newFeedback}
-                     onChange={(e) => setNewFeedback(e.target.value)}
-                     placeholder="Write your feedback here..."
-                     className="min-h-[100px]"
-                   />
+                    <Textarea
+                      value={newFeedback}
+                      onChange={(e) => setNewFeedback(e.target.value)}
+                      placeholder="Write your feedback here..."
+                      className="min-h-[100px]"
+                      maxLength={2000}
+                    />
+                    <p className="text-xs text-muted-foreground text-right">{newFeedback.length}/2000</p>
                    <Button
                      className="bg-gradient-primary hover:opacity-90"
                      onClick={handleSubmitFeedback}
