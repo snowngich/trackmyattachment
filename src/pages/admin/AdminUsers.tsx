@@ -22,13 +22,14 @@
    DialogTitle,
    DialogTrigger,
  } from "@/components/ui/dialog";
- import { useToast } from "@/hooks/use-toast";
- import { 
-   Search, 
-   UserPlus,
-   Edit,
-   Loader2
- } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { 
+    Search, 
+    UserPlus,
+    Edit,
+    Loader2
+  } from "lucide-react";
  import { AppRole } from "@/lib/supabase";
  
  interface User {
@@ -103,41 +104,41 @@
  
        await fetchUsers();
        setSelectedUser(null);
-     } catch (error: any) {
-       toast({
-         title: "Error",
-         description: error.message,
-         variant: "destructive",
-       });
-     } finally {
-       setIsUpdating(false);
-     }
-   };
- 
-   const handleRemoveRole = async (userId: string, role: AppRole) => {
-     try {
-       const { error } = await supabase
-         .from("user_roles")
-         .delete()
-         .eq("user_id", userId)
-         .eq("role", role);
- 
-       if (error) throw error;
- 
-       toast({
-         title: "Role removed",
-         description: `${role} role removed`,
-       });
- 
-       await fetchUsers();
-     } catch (error: any) {
-       toast({
-         title: "Error",
-         description: error.message,
-         variant: "destructive",
-       });
-     }
-   };
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+      } finally {
+        setIsUpdating(false);
+      }
+    };
+
+    const handleRemoveRole = async (userId: string, role: AppRole) => {
+      try {
+        const { error } = await supabase
+          .from("user_roles")
+          .delete()
+          .eq("user_id", userId)
+          .eq("role", role);
+
+        if (error) throw error;
+
+        toast({
+          title: "Role removed",
+          description: `${role} role removed`,
+        });
+
+        await fetchUsers();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+      }
+    };
  
    const filteredUsers = users.filter((user) =>
      user.full_name.toLowerCase().includes(searchQuery.toLowerCase())

@@ -22,14 +22,16 @@
    DialogTitle,
    DialogTrigger,
  } from "@/components/ui/dialog";
- import { useToast } from "@/hooks/use-toast";
- import { 
-   Plus,
-   Loader2,
-   Calendar,
-   Building2,
-   User
- } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { placementSchema } from "@/lib/validation";
+import { 
+    Plus,
+    Loader2,
+    Calendar,
+    Building2,
+    User
+  } from "lucide-react";
  import { format } from "date-fns";
  
  interface Placement {
@@ -190,54 +192,55 @@
      fetchData();
    }, []);
  
-   const handleCreate = async () => {
-     if (!newPlacement.student_id || !newPlacement.company_id || !newPlacement.start_date || !newPlacement.end_date) {
-       toast({
-         title: "Missing fields",
-         description: "Please fill in all required fields",
-         variant: "destructive",
-       });
-       return;
-     }
- 
-     setIsCreating(true);
- 
-     try {
-       const { data: { user } } = await supabase.auth.getUser();
- 
-       const { error } = await supabase.from("attachments").insert({
-         student_id: newPlacement.student_id,
-         company_id: newPlacement.company_id,
-         supervisor_id: newPlacement.supervisor_id || null,
-         coordinator_id: user?.id,
-         start_date: newPlacement.start_date,
-         end_date: newPlacement.end_date,
-         status: "pending",
-       });
- 
-       if (error) throw error;
- 
-       toast({
-         title: "Placement created",
-         description: "The attachment placement has been created",
-       });
- 
-       setNewPlacement({
-         student_id: "",
-         company_id: "",
-         supervisor_id: "",
-         start_date: "",
-         end_date: "",
-       });
-       setDialogOpen(false);
-       await fetchData();
-     } catch (error: any) {
-       toast({
-         title: "Error",
-         description: error.message,
-         variant: "destructive",
-       });
-     } finally {
+    const handleCreate = async () => {
+      const validation = placementSchema.safeParse(newPlacement);
+      if (!validation.success) {
+        toast({
+          title: "Validation error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsCreating(true);
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        const { error } = await supabase.from("attachments").insert({
+          student_id: validation.data.student_id,
+          company_id: validation.data.company_id,
+          supervisor_id: validation.data.supervisor_id || null,
+          coordinator_id: user?.id,
+          start_date: validation.data.start_date,
+          end_date: validation.data.end_date,
+          status: "pending",
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Placement created",
+          description: "The attachment placement has been created",
+        });
+
+        setNewPlacement({
+          student_id: "",
+          company_id: "",
+          supervisor_id: "",
+          start_date: "",
+          end_date: "",
+        });
+        setDialogOpen(false);
+        await fetchData();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+      } finally {
        setIsCreating(false);
      }
    };

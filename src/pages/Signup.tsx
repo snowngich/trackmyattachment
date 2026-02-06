@@ -1,12 +1,14 @@
- import { useState } from "react";
- import { Link } from "react-router-dom";
- import { useAuth } from "@/contexts/AuthContext";
- import AuthLayout from "@/components/auth/AuthLayout";
- import { Button } from "@/components/ui/button";
- import { Input } from "@/components/ui/input";
- import { Label } from "@/components/ui/label";
- import { useToast } from "@/hooks/use-toast";
- import { Loader2, Mail, Lock, User } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { signupSchema } from "@/lib/validation";
+import AuthLayout from "@/components/auth/AuthLayout";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2, Mail, Lock, User } from "lucide-react";
  
  const Signup = () => {
    const [email, setEmail] = useState("");
@@ -17,21 +19,32 @@
    const { signUp } = useAuth();
    const { toast } = useToast();
  
-   const handleSubmit = async (e: React.FormEvent) => {
-     e.preventDefault();
-     setIsLoading(true);
- 
-     const { error } = await signUp(email, password, fullName);
- 
-     if (error) {
-       toast({
-         title: "Signup failed",
-         description: error.message,
-         variant: "destructive",
-       });
-       setIsLoading(false);
-       return;
-     }
+    const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      const validation = signupSchema.safeParse({ email, password, fullName });
+      if (!validation.success) {
+        toast({
+          title: "Validation error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+
+      const { error } = await signUp(email, password, fullName);
+
+      if (error) {
+        toast({
+          title: "Signup failed",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
  
      setIsSuccess(true);
      toast({

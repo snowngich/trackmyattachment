@@ -23,14 +23,16 @@
    DialogTrigger,
  } from "@/components/ui/dialog";
  import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
- import { useToast } from "@/hooks/use-toast";
- import { 
-   Building2, 
-   GraduationCap,
-   Plus,
-   Loader2,
-   MapPin
- } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { getUserFriendlyError } from "@/lib/error-utils";
+import { organizationSchema } from "@/lib/validation";
+import { 
+    Building2, 
+    GraduationCap,
+    Plus,
+    Loader2,
+    MapPin
+  } from "lucide-react";
  
  type OrgType = "university" | "company";
  
@@ -70,42 +72,43 @@
      fetchOrganizations();
    }, []);
  
-   const handleCreate = async () => {
-     if (!newOrg.name.trim()) {
-       toast({
-         title: "Name required",
-         description: "Please enter an organization name",
-         variant: "destructive",
-       });
-       return;
-     }
- 
-     setIsCreating(true);
- 
-     try {
-       const { error } = await supabase.from("organizations").insert({
-         name: newOrg.name.trim(),
-         type: newOrg.type,
-         address: newOrg.address.trim() || null,
-       });
- 
-       if (error) throw error;
- 
-       toast({
-         title: "Organization created",
-         description: `${newOrg.name} has been added`,
-       });
- 
-       setNewOrg({ name: "", type: "university", address: "" });
-       setDialogOpen(false);
-       await fetchOrganizations();
-     } catch (error: any) {
-       toast({
-         title: "Error",
-         description: error.message,
-         variant: "destructive",
-       });
-     } finally {
+    const handleCreate = async () => {
+      const validation = organizationSchema.safeParse(newOrg);
+      if (!validation.success) {
+        toast({
+          title: "Validation error",
+          description: validation.error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setIsCreating(true);
+
+      try {
+        const { error } = await supabase.from("organizations").insert({
+          name: validation.data.name,
+          type: validation.data.type,
+          address: validation.data.address || null,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Organization created",
+          description: `${validation.data.name} has been added`,
+        });
+
+        setNewOrg({ name: "", type: "university", address: "" });
+        setDialogOpen(false);
+        await fetchOrganizations();
+      } catch (error: any) {
+        toast({
+          title: "Error",
+          description: getUserFriendlyError(error),
+          variant: "destructive",
+        });
+      } finally {
        setIsCreating(false);
      }
    };
