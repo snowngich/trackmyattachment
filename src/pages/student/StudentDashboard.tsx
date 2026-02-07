@@ -1,22 +1,23 @@
- import { useEffect, useState } from "react";
- import { Link } from "react-router-dom";
- import { useAuth } from "@/contexts/AuthContext";
- import { supabase } from "@/integrations/supabase/client";
- import DashboardLayout from "@/components/layout/DashboardLayout";
- import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
- import { Button } from "@/components/ui/button";
- import { Badge } from "@/components/ui/badge";
- import { 
-   FileText, 
-   Calendar, 
-   Building2, 
-   MessageSquare, 
-   Plus,
-   Clock,
-   CheckCircle2,
-   AlertCircle
- } from "lucide-react";
- import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  FileText, 
+  Calendar, 
+  Building2, 
+  MessageSquare, 
+  Plus,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  ClipboardList
+} from "lucide-react";
+import { format } from "date-fns";
  
  interface Attachment {
    id: string;
@@ -206,11 +207,17 @@
                    </div>
                  </div>
                ) : (
-                 <div className="text-center py-8 text-muted-foreground">
-                   <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                   <p>No active attachment</p>
-                   <p className="text-sm">Contact your coordinator for placement</p>
-                 </div>
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Building2 className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>No active attachment</p>
+                    <p className="text-sm mb-4">Set up your attachment details to get started</p>
+                    <Link to="/student/attachment-setup">
+                      <Button className="bg-gradient-primary hover:opacity-90">
+                        <ClipboardList className="w-4 h-4 mr-2" />
+                        Set Up Attachment
+                      </Button>
+                    </Link>
+                  </div>
                )}
              </CardContent>
            </Card>

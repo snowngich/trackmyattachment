@@ -144,18 +144,23 @@ import {
      user.full_name.toLowerCase().includes(searchQuery.toLowerCase())
    );
  
-   const getRoleBadgeColor = (role: AppRole) => {
-     switch (role) {
-       case "admin":
-         return "bg-destructive/10 text-destructive";
-       case "coordinator":
-         return "bg-info/10 text-info";
-       case "supervisor":
-         return "bg-success/10 text-success";
-       default:
-         return "bg-primary/10 text-primary";
-     }
-   };
+  const getRoleBadgeColor = (role: AppRole) => {
+    switch (role) {
+      case "admin":
+        return "bg-destructive/10 text-destructive";
+      case "coordinator":
+        return "bg-info/10 text-info";
+      case "supervisor":
+        return "bg-success/10 text-success";
+      default:
+        return "bg-primary/10 text-primary";
+    }
+  };
+
+  const getRoleDisplayLabel = (role: AppRole) => {
+    if (role === "coordinator") return "Lecturer";
+    return role;
+  };
  
    return (
      <DashboardLayout>
@@ -203,19 +208,19 @@ import {
                        <div>
                          <h3 className="font-semibold">{user.full_name}</h3>
                          <div className="flex flex-wrap gap-2 mt-1">
-                           {user.roles.map((role) => (
-                             <Badge
-                               key={role}
-                               className={`${getRoleBadgeColor(role)} border-0 cursor-pointer`}
-                               onClick={() => {
-                                 if (user.roles.length > 1) {
-                                   handleRemoveRole(user.user_id, role);
-                                 }
-                               }}
-                             >
-                               {role}
-                             </Badge>
-                           ))}
+                          {user.roles.map((role) => (
+                              <Badge
+                                key={role}
+                                className={`${getRoleBadgeColor(role)} border-0 cursor-pointer capitalize`}
+                                onClick={() => {
+                                  if (user.roles.length > 1) {
+                                    handleRemoveRole(user.user_id, role);
+                                  }
+                                }}
+                              >
+                                {getRoleDisplayLabel(role)}
+                              </Badge>
+                            ))}
                          </div>
                        </div>
                      </div>
@@ -243,10 +248,10 @@ import {
                              <SelectValue />
                            </SelectTrigger>
                            <SelectContent className="bg-card">
-                             <SelectItem value="student">Student</SelectItem>
-                             <SelectItem value="supervisor">Supervisor</SelectItem>
-                             <SelectItem value="coordinator">Coordinator</SelectItem>
-                             <SelectItem value="admin">Admin</SelectItem>
+                              <SelectItem value="student">Student</SelectItem>
+                              <SelectItem value="supervisor">Supervisor</SelectItem>
+                              <SelectItem value="coordinator">Lecturer</SelectItem>
+                              <SelectItem value="admin">Admin</SelectItem>
                            </SelectContent>
                          </Select>
                          <DialogFooter>

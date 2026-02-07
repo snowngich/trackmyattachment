@@ -99,12 +99,12 @@
        <div className="space-y-6">
          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
            <div>
-             <h1 className="text-2xl lg:text-3xl font-display font-bold">
-               Welcome, {profile?.full_name?.split(" ")[0]}!
-             </h1>
-             <p className="text-muted-foreground mt-1">
-               Manage student placements and track progress
-             </p>
+              <h1 className="text-2xl lg:text-3xl font-display font-bold">
+                Welcome, {profile?.full_name?.split(" ")[0]}!
+              </h1>
+              <p className="text-muted-foreground mt-1">
+                Manage student placements and assess progress
+              </p>
            </div>
            <Link to="/coordinator/placements">
              <Button className="bg-gradient-primary hover:opacity-90">
