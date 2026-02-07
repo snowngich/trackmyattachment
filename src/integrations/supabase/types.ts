@@ -22,10 +22,12 @@ export type Database = {
           department_id: string | null
           end_date: string
           id: string
+          lecturer_name: string | null
           start_date: string
           status: Database["public"]["Enums"]["attachment_status"]
           student_id: string
           supervisor_id: string | null
+          supervisor_name: string | null
           updated_at: string
         }
         Insert: {
@@ -35,10 +37,12 @@ export type Database = {
           department_id?: string | null
           end_date: string
           id?: string
+          lecturer_name?: string | null
           start_date: string
           status?: Database["public"]["Enums"]["attachment_status"]
           student_id: string
           supervisor_id?: string | null
+          supervisor_name?: string | null
           updated_at?: string
         }
         Update: {
@@ -48,10 +52,12 @@ export type Database = {
           department_id?: string | null
           end_date?: string
           id?: string
+          lecturer_name?: string | null
           start_date?: string
           status?: Database["public"]["Enums"]["attachment_status"]
           student_id?: string
           supervisor_id?: string | null
+          supervisor_name?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -125,6 +131,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "feedback_log_id_fkey"
+            columns: ["log_id"]
+            isOneToOne: false
+            referencedRelation: "logs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      log_entries: {
+        Row: {
+          activity: string
+          created_at: string
+          entry_date: string
+          id: string
+          lesson_learnt: string | null
+          log_id: string
+          problem_faced: string | null
+          supervisor_remarks: string | null
+          time_from: string | null
+          time_to: string | null
+          updated_at: string
+        }
+        Insert: {
+          activity: string
+          created_at?: string
+          entry_date: string
+          id?: string
+          lesson_learnt?: string | null
+          log_id: string
+          problem_faced?: string | null
+          supervisor_remarks?: string | null
+          time_from?: string | null
+          time_to?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activity?: string
+          created_at?: string
+          entry_date?: string
+          id?: string
+          lesson_learnt?: string | null
+          log_id?: string
+          problem_faced?: string | null
+          supervisor_remarks?: string | null
+          time_from?: string | null
+          time_to?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "log_entries_log_id_fkey"
             columns: ["log_id"]
             isOneToOne: false
             referencedRelation: "logs"
@@ -237,6 +293,7 @@ export type Database = {
           id: string
           organization_id: string | null
           phone: string | null
+          student_reg_number: string | null
           updated_at: string
           user_id: string
         }
@@ -247,6 +304,7 @@ export type Database = {
           id?: string
           organization_id?: string | null
           phone?: string | null
+          student_reg_number?: string | null
           updated_at?: string
           user_id: string
         }
@@ -257,6 +315,7 @@ export type Database = {
           id?: string
           organization_id?: string | null
           phone?: string | null
+          student_reg_number?: string | null
           updated_at?: string
           user_id?: string
         }
