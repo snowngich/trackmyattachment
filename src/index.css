@@ -5,48 +5,48 @@
 @tailwind utilities;
 
 /* TrackMyAttachment Design System
-   A professional EdTech platform for industrial attachment management
+   A professional EdTech platform — Blue & White palette
 */
 
 @layer base {
   :root {
-    /* Core brand colors - Deep teal for trust & professionalism */
-    --background: 180 20% 99%;
-    --foreground: 192 80% 10%;
+    /* Core brand colors - Clean blue for trust & professionalism */
+    --background: 210 40% 99%;
+    --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
-    --card-foreground: 192 80% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 192 80% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Primary: Deep teal - education, trust, stability */
-    --primary: 174 62% 32%;
+    /* Primary: Vibrant blue - education, trust, stability */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
-    /* Secondary: Soft slate for UI elements */
-    --secondary: 200 15% 94%;
-    --secondary-foreground: 192 60% 15%;
+    /* Secondary: Cool slate for UI elements */
+    --secondary: 210 20% 94%;
+    --secondary-foreground: 222 40% 20%;
 
     /* Muted: Subtle backgrounds */
-    --muted: 180 10% 96%;
-    --muted-foreground: 200 15% 45%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215 16% 47%;
 
-    /* Accent: Warm amber for achievements & highlights */
-    --accent: 38 92% 50%;
+    /* Accent: Soft indigo for highlights */
+    --accent: 238 70% 62%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 200 20% 90%;
-    --input: 200 20% 90%;
-    --ring: 174 62% 32%;
+    --border: 214 20% 91%;
+    --input: 214 20% 91%;
+    --ring: 221 83% 53%;
 
     --radius: 0.75rem;
 
     /* Extended palette */
-    --success: 158 64% 42%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     
     --warning: 38 92% 50%;
@@ -56,66 +56,66 @@
     --info-foreground: 0 0% 100%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(174, 62%, 32%) 0%, hsl(192, 70%, 28%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(38, 92%, 50%) 0%, hsl(28, 95%, 55%) 100%);
-    --gradient-hero: linear-gradient(180deg, hsl(180, 20%, 99%) 0%, hsl(180, 15%, 96%) 100%);
-    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(180, 10%, 98%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(221, 83%, 53%) 0%, hsl(238, 70%, 62%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(238, 70%, 62%) 0%, hsl(250, 75%, 58%) 100%);
+    --gradient-hero: linear-gradient(180deg, hsl(210, 40%, 99%) 0%, hsl(214, 32%, 96%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0, 0%, 100%) 0%, hsl(210, 20%, 98%) 100%);
 
     /* Shadows */
-    --shadow-sm: 0 1px 2px 0 hsl(192 80% 10% / 0.05);
-    --shadow-md: 0 4px 6px -1px hsl(192 80% 10% / 0.08), 0 2px 4px -2px hsl(192 80% 10% / 0.06);
-    --shadow-lg: 0 10px 15px -3px hsl(192 80% 10% / 0.1), 0 4px 6px -4px hsl(192 80% 10% / 0.1);
-    --shadow-xl: 0 20px 25px -5px hsl(192 80% 10% / 0.1), 0 8px 10px -6px hsl(192 80% 10% / 0.1);
-    --shadow-glow: 0 0 40px -10px hsl(174 62% 32% / 0.3);
+    --shadow-sm: 0 1px 2px 0 hsl(222 47% 11% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(222 47% 11% / 0.08), 0 2px 4px -2px hsl(222 47% 11% / 0.06);
+    --shadow-lg: 0 10px 15px -3px hsl(222 47% 11% / 0.1), 0 4px 6px -4px hsl(222 47% 11% / 0.1);
+    --shadow-xl: 0 20px 25px -5px hsl(222 47% 11% / 0.1), 0 8px 10px -6px hsl(222 47% 11% / 0.1);
+    --shadow-glow: 0 0 40px -10px hsl(221 83% 53% / 0.3);
 
     /* Sidebar */
-    --sidebar-background: 180 15% 98%;
-    --sidebar-foreground: 192 60% 15%;
-    --sidebar-primary: 174 62% 32%;
+    --sidebar-background: 210 30% 98%;
+    --sidebar-foreground: 222 40% 20%;
+    --sidebar-primary: 221 83% 53%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 180 10% 94%;
-    --sidebar-accent-foreground: 192 60% 15%;
-    --sidebar-border: 200 20% 90%;
-    --sidebar-ring: 174 62% 32%;
+    --sidebar-accent: 210 20% 94%;
+    --sidebar-accent-foreground: 222 40% 20%;
+    --sidebar-border: 214 20% 91%;
+    --sidebar-ring: 221 83% 53%;
   }
 
   .dark {
-    --background: 192 80% 6%;
-    --foreground: 180 10% 96%;
+    --background: 222 47% 6%;
+    --foreground: 210 20% 96%;
 
-    --card: 192 70% 8%;
-    --card-foreground: 180 10% 96%;
+    --card: 222 40% 8%;
+    --card-foreground: 210 20% 96%;
 
-    --popover: 192 70% 8%;
-    --popover-foreground: 180 10% 96%;
+    --popover: 222 40% 8%;
+    --popover-foreground: 210 20% 96%;
 
-    --primary: 174 55% 45%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 192 50% 15%;
-    --secondary-foreground: 180 10% 90%;
+    --secondary: 222 40% 15%;
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 192 50% 12%;
-    --muted-foreground: 200 15% 60%;
+    --muted: 222 40% 12%;
+    --muted-foreground: 215 16% 60%;
 
-    --accent: 38 85% 55%;
+    --accent: 238 60% 65%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 192 50% 18%;
-    --input: 192 50% 18%;
-    --ring: 174 55% 45%;
+    --border: 222 40% 18%;
+    --input: 222 40% 18%;
+    --ring: 217 91% 60%;
 
-    --sidebar-background: 192 70% 8%;
-    --sidebar-foreground: 180 10% 90%;
-    --sidebar-primary: 174 55% 45%;
+    --sidebar-background: 222 40% 8%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 192 50% 12%;
-    --sidebar-accent-foreground: 180 10% 90%;
-    --sidebar-border: 192 50% 18%;
-    --sidebar-ring: 174 55% 45%;
+    --sidebar-accent: 222 40% 12%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 222 40% 18%;
+    --sidebar-ring: 217 91% 60%;
   }
 }
 
