@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getRoleLabel } from "@/lib/role-labels";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ProfileAvatar from "@/components/ProfileAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,11 +93,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     navigate("/login");
   };
 
-  const initials = profile?.full_name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase() || "U";
+  const displayName = profile?.full_name || "User";
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -153,13 +149,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           {/* User info */}
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 px-2 py-2">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
+              <ProfileAvatar name={displayName} size="sm" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{profile?.full_name}</p>
+                <p className="text-sm font-medium truncate">{displayName}</p>
                 <p className="text-xs text-muted-foreground">{getRoleLabel(primaryRole)}</p>
               </div>
             </div>
@@ -187,12 +179,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-2">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                      {initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="hidden sm:inline font-medium">{profile?.full_name}</span>
+                  <ProfileAvatar name={displayName} size="sm" />
+                  <span className="hidden sm:inline font-medium">{displayName}</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-card">

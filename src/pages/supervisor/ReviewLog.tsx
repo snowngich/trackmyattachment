@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ProfileAvatar from "@/components/ProfileAvatar";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { getUserFriendlyError } from "@/lib/error-utils";
@@ -401,14 +401,7 @@ const ReviewLog = () => {
                   <div className="space-y-4">
                     {feedback.map((f) => (
                       <div key={f.id} className="flex gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-primary/10 text-primary text-xs">
-                            {f.author.full_name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")}
-                          </AvatarFallback>
-                        </Avatar>
+                        <ProfileAvatar name={f.author.full_name} size="sm" />
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <span className="font-medium text-sm">{f.author.full_name}</span>
@@ -459,14 +452,7 @@ const ReviewLog = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12">
-                    <AvatarFallback className="bg-primary/10 text-primary">
-                      {student?.full_name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </AvatarFallback>
-                  </Avatar>
+                  <ProfileAvatar name={student?.full_name || "?"} size="lg" />
                   <div>
                     <p className="font-medium">{student?.full_name}</p>
                     <p className="text-sm text-muted-foreground">Student</p>

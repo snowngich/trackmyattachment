@@ -5,8 +5,8 @@
  import DashboardLayout from "@/components/layout/DashboardLayout";
  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
  import { Button } from "@/components/ui/button";
- import { Badge } from "@/components/ui/badge";
- import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import ProfileAvatar from "@/components/ProfileAvatar";
  import { 
    Users, 
    FileText, 
@@ -254,15 +254,8 @@
                        key={student.id}
                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
                      >
-                       <div className="flex items-center gap-3">
-                         <Avatar className="h-9 w-9">
-                           <AvatarFallback className="bg-primary/10 text-primary text-sm">
-                             {student.profile.full_name
-                               .split(" ")
-                               .map((n) => n[0])
-                               .join("")}
-                           </AvatarFallback>
-                         </Avatar>
+                        <div className="flex items-center gap-3">
+                          <ProfileAvatar name={student.profile.full_name} size="sm" />
                          <div>
                            <p className="font-medium">{student.profile.full_name}</p>
                            <p className="text-xs text-muted-foreground">
