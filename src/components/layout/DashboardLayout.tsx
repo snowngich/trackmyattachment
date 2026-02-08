@@ -58,6 +58,7 @@ const getNavItems = (role: AppRole): NavItem[] => {
       return [
         ...baseItems,
         { label: "Students", href: "/coordinator/students", icon: <Users className="w-5 h-5" /> },
+        { label: "Student Logs", href: "/coordinator/logs", icon: <FileText className="w-5 h-5" /> },
         { label: "Placements", href: "/coordinator/placements", icon: <ClipboardList className="w-5 h-5" /> },
         { label: "Reports", href: "/coordinator/reports", icon: <BarChart3 className="w-5 h-5" /> },
       ];

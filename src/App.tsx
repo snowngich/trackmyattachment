@@ -26,6 +26,8 @@ import ReviewLog from "./pages/supervisor/ReviewLog";
 
 // Coordinator (Lecturer) Pages
 import CoordinatorDashboard from "./pages/coordinator/CoordinatorDashboard";
+import LecturerLogs from "./pages/coordinator/LecturerLogs";
+import LecturerReviewLog from "./pages/coordinator/LecturerReviewLog";
 
 // Admin Pages
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -139,6 +141,22 @@ const App = () => (
               element={
                 <ProtectedRoute allowedRoles={["coordinator", "admin"]}>
                   <CoordinatorDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/coordinator/logs"
+              element={
+                <ProtectedRoute allowedRoles={["coordinator", "admin"]}>
+                  <LecturerLogs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/coordinator/logs/:logId"
+              element={
+                <ProtectedRoute allowedRoles={["coordinator", "admin"]}>
+                  <LecturerReviewLog />
                 </ProtectedRoute>
               }
             />
