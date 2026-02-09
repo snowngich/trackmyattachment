@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { getRoleDashboardPath, AppRole } from "@/lib/supabase";
@@ -26,9 +26,18 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [pendingRedirectRole, setPendingRedirectRole] = useState<AppRole | null>(null);
   const { signIn, roles: userRoles } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Wait for roles to load after sign-in, then redirect
+  useEffect(() => {
+    if (pendingRedirectRole && userRoles.length > 0) {
+      navigate(getRoleDashboardPath(pendingRedirectRole));
+      setPendingRedirectRole(null);
+    }
+  }, [pendingRedirectRole, userRoles, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +71,8 @@ const Login = () => {
       description: "Successfully signed in.",
     });
 
-    // Redirect to the selected role dashboard
-    setTimeout(() => {
-      if (selectedRole) {
-        navigate(getRoleDashboardPath(selectedRole));
-      } else {
-        navigate("/student");
-      }
-    }, 100);
+    // Set pending redirect — useEffect will navigate once roles are loaded
+    setPendingRedirectRole(selectedRole || "student");
   };
 
   return (
