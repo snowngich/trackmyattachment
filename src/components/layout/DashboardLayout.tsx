@@ -15,7 +15,6 @@ import {
 import {
   GraduationCap,
   Menu,
-  X,
   LogOut,
   User,
   Home,
@@ -76,6 +75,21 @@ const getNavItems = (role: AppRole): NavItem[] => {
   }
 };
 
+const getProfilePath = (role: AppRole) => {
+  switch (role) {
+    case "student": return "/student/profile";
+    default: return `/${role === "coordinator" ? "coordinator" : role}`;
+  }
+};
+
+const getSettingsPath = (role: AppRole) => {
+  switch (role) {
+    case "student": return "/student/settings";
+    case "admin": return "/admin/settings";
+    default: return `/${role === "coordinator" ? "coordinator" : role}`;
+  }
+};
+
 interface DashboardLayoutProps {
   children: React.ReactNode;
 }
@@ -97,23 +111,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-muted/30">
-      {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <aside
-        className={cn(
-          "fixed top-0 left-0 z-50 h-full w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0",
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        )}
-      >
+      <aside className={cn(
+        "fixed top-0 left-0 z-50 h-full w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
         <div className="flex flex-col h-full">
-          {/* Logo */}
           <div className="h-16 flex items-center gap-2 px-6 border-b border-border">
             <div className="w-9 h-9 rounded-lg bg-gradient-primary flex items-center justify-center">
               <GraduationCap className="w-5 h-5 text-white" />
@@ -123,7 +129,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </span>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = location.pathname === item.href;
@@ -146,7 +151,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             })}
           </nav>
 
-          {/* User info */}
           <div className="p-4 border-t border-border">
             <div className="flex items-center gap-3 px-2 py-2">
               <ProfileAvatar name={displayName} size="sm" />
@@ -159,14 +163,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </div>
       </aside>
 
-      {/* Main content */}
       <div className="lg:pl-64">
-        {/* Top bar */}
         <header className="h-16 bg-card border-b border-border flex items-center justify-between px-4 lg:px-6 sticky top-0 z-30">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 text-muted-foreground hover:text-foreground"
-          >
+          <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-muted-foreground hover:text-foreground">
             <Menu className="w-6 h-6" />
           </button>
 
@@ -186,11 +185,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <DropdownMenuContent align="end" className="w-56 bg-card">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(getProfilePath(primaryRole))}>
                   <User className="w-4 h-4 mr-2" />
                   Profile
                 </DropdownMenuItem>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate(getSettingsPath(primaryRole))}>
                   <Settings className="w-4 h-4 mr-2" />
                   Settings
                 </DropdownMenuItem>
@@ -204,7 +203,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </header>
 
-        {/* Page content */}
         <main className="p-4 lg:p-6">{children}</main>
       </div>
     </div>

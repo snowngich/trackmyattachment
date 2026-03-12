@@ -25,6 +25,11 @@ interface Organization {
   type: string;
 }
 
+interface SupervisorOption {
+  user_id: string;
+  full_name: string;
+}
+
 const AttachmentSetup = () => {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
@@ -32,6 +37,8 @@ const AttachmentSetup = () => {
 
   const [companies, setCompanies] = useState<Organization[]>([]);
   const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
+  const [supervisors, setSupervisors] = useState<SupervisorOption[]>([]);
+  const [lecturers, setLecturers] = useState<SupervisorOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -42,20 +49,41 @@ const AttachmentSetup = () => {
   // Attachment fields
   const [companyId, setCompanyId] = useState("");
   const [departmentId, setDepartmentId] = useState("");
-  const [supervisorName, setSupervisorName] = useState("");
-  const [lecturerName, setLecturerName] = useState("");
+  const [supervisorId, setSupervisorId] = useState("");
+  const [lecturerId, setLecturerId] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
-      const [companiesRes, deptsRes] = await Promise.all([
+      // Fetch companies, departments, supervisors, lecturers in parallel
+      const [companiesRes, deptsRes, supervisorRolesRes, lecturerRolesRes] = await Promise.all([
         supabase.from("organizations").select("*").eq("type", "company").order("name"),
         supabase.from("departments").select("id, name").order("name"),
+        supabase.from("user_roles").select("user_id").eq("role", "supervisor"),
+        supabase.from("user_roles").select("user_id").eq("role", "coordinator"),
       ]);
 
       if (companiesRes.data) setCompanies(companiesRes.data);
       if (deptsRes.data) setDepartments(deptsRes.data);
+
+      // Fetch supervisor profiles
+      if (supervisorRolesRes.data && supervisorRolesRes.data.length > 0) {
+        const { data: supProfiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", supervisorRolesRes.data.map((r) => r.user_id));
+        if (supProfiles) setSupervisors(supProfiles);
+      }
+
+      // Fetch lecturer profiles
+      if (lecturerRolesRes.data && lecturerRolesRes.data.length > 0) {
+        const { data: lecProfiles } = await supabase
+          .from("profiles")
+          .select("user_id, full_name")
+          .in("user_id", lecturerRolesRes.data.map((r) => r.user_id));
+        if (lecProfiles) setLecturers(lecProfiles);
+      }
 
       // Pre-fill from profile
       if (profile) {
@@ -74,18 +102,14 @@ const AttachmentSetup = () => {
     if (!user) return;
 
     if (!companyId || !startDate || !endDate) {
-      toast({
-        title: "Missing fields",
-        description: "Please fill in all required fields.",
-        variant: "destructive",
-      });
+      toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
       return;
     }
 
     setIsSaving(true);
 
     try {
-      // Update profile with reg number and phone
+      // Update profile
       const { error: profileError } = await supabase
         .from("profiles")
         .update({
@@ -96,13 +120,15 @@ const AttachmentSetup = () => {
 
       if (profileError) throw profileError;
 
-      // Create attachment
+      // Create attachment with supervisor/lecturer IDs from dropdowns
       const { error: attachmentError } = await supabase.from("attachments").insert({
         student_id: user.id,
         company_id: companyId,
         department_id: departmentId || null,
-        supervisor_name: supervisorName.trim() || null,
-        lecturer_name: lecturerName.trim() || null,
+        supervisor_id: supervisorId || null,
+        coordinator_id: lecturerId || null,
+        supervisor_name: supervisors.find((s) => s.user_id === supervisorId)?.full_name || null,
+        lecturer_name: lecturers.find((l) => l.user_id === lecturerId)?.full_name || null,
         start_date: startDate,
         end_date: endDate,
         status: "pending",
@@ -119,11 +145,7 @@ const AttachmentSetup = () => {
 
       navigate("/student");
     } catch (error: any) {
-      toast({
-        title: "Error",
-        description: getUserFriendlyError(error),
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: getUserFriendlyError(error), variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
@@ -143,12 +165,8 @@ const AttachmentSetup = () => {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl lg:text-3xl font-display font-bold">
-            Set Up Your Attachment
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Fill in the details of your industrial attachment placement
-          </p>
+          <h1 className="text-2xl lg:text-3xl font-display font-bold">Set Up Your Attachment</h1>
+          <p className="text-muted-foreground mt-2">Fill in the details of your industrial attachment placement</p>
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -169,22 +187,11 @@ const AttachmentSetup = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="regNumber">Registration Number *</Label>
-                  <Input
-                    id="regNumber"
-                    value={studentRegNumber}
-                    onChange={(e) => setStudentRegNumber(e.target.value)}
-                    placeholder="e.g. BCS/2023/001"
-                    required
-                  />
+                  <Input id="regNumber" value={studentRegNumber} onChange={(e) => setStudentRegNumber(e.target.value)} placeholder="e.g. BCS/2023/001" required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="e.g. +254..."
-                  />
+                  <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="e.g. +254..." />
                 </div>
               </div>
             </CardContent>
@@ -225,9 +232,7 @@ const AttachmentSetup = () => {
                     </SelectTrigger>
                     <SelectContent className="bg-card">
                       {departments.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>
-                          {d.name}
-                        </SelectItem>
+                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -236,65 +241,51 @@ const AttachmentSetup = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="supervisorName">Supervisor Name</Label>
-                  <Input
-                    id="supervisorName"
-                    value={supervisorName}
-                    onChange={(e) => setSupervisorName(e.target.value)}
-                    placeholder="Name of your company supervisor"
-                  />
+                  <Label>Supervisor *</Label>
+                  <Select value={supervisorId} onValueChange={setSupervisorId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select supervisor" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card">
+                      {supervisors.map((s) => (
+                        <SelectItem key={s.user_id} value={s.user_id}>{s.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lecturerName">Assessing Lecturer</Label>
-                  <Input
-                    id="lecturerName"
-                    value={lecturerName}
-                    onChange={(e) => setLecturerName(e.target.value)}
-                    placeholder="Lecturer assigned to assess you"
-                  />
+                  <Label>Assessing Lecturer</Label>
+                  <Select value={lecturerId} onValueChange={setLecturerId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select lecturer (optional)" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card">
+                      {lecturers.map((l) => (
+                        <SelectItem key={l.user_id} value={l.user_id}>{l.full_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="startDate">Start Date *</Label>
-                  <Input
-                    id="startDate"
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
-                  />
+                  <Input id="startDate" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} required />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="endDate">End Date *</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    required
-                  />
+                  <Input id="endDate" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} required />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Button
-            type="submit"
-            className="w-full bg-gradient-primary hover:opacity-90 h-11 font-semibold"
-            disabled={isSaving}
-          >
+          <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 h-11 font-semibold" disabled={isSaving}>
             {isSaving ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                Saving...
-              </>
+              <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</>
             ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                Save Attachment Details
-              </>
+              <><Save className="w-4 h-4 mr-2" />Save Attachment Details</>
             )}
           </Button>
         </form>
