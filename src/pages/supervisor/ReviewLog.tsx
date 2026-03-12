@@ -87,7 +87,7 @@ const ReviewLog = () => {
 
       if (logData) {
         setLog(logData);
-
+        setIsApproved((logData as any).supervisor_approved === true);
         // Fetch student, entries, feedback, files in parallel
         const [attachmentRes, entriesRes, feedbackRes, filesRes] = await Promise.all([
           supabase.from("attachments").select("student_id").eq("id", logData.attachment_id).single(),
