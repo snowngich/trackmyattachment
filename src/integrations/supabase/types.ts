@@ -230,6 +230,7 @@ export type Database = {
           created_at: string
           id: string
           submitted_at: string | null
+          supervisor_approved: boolean
           updated_at: string
           week_number: number
         }
@@ -239,6 +240,7 @@ export type Database = {
           created_at?: string
           id?: string
           submitted_at?: string | null
+          supervisor_approved?: boolean
           updated_at?: string
           week_number: number
         }
@@ -248,6 +250,7 @@ export type Database = {
           created_at?: string
           id?: string
           submitted_at?: string | null
+          supervisor_approved?: boolean
           updated_at?: string
           week_number?: number
         }
