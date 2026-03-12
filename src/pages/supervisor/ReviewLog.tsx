@@ -21,6 +21,8 @@ import {
   MessageSquare,
   Clock,
   Save,
+  CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -87,7 +89,7 @@ const ReviewLog = () => {
 
       if (logData) {
         setLog(logData);
-
+        setIsApproved((logData as any).supervisor_approved === true);
         // Fetch student, entries, feedback, files in parallel
         const [attachmentRes, entriesRes, feedbackRes, filesRes] = await Promise.all([
           supabase.from("attachments").select("student_id").eq("id", logData.attachment_id).single(),
@@ -140,6 +142,9 @@ const ReviewLog = () => {
     fetchData();
   }, [logId]);
 
+  const [isApproving, setIsApproving] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+
   const handleSaveRemarks = async () => {
     setIsSavingRemarks(true);
     try {
@@ -166,6 +171,31 @@ const ReviewLog = () => {
       });
     } finally {
       setIsSavingRemarks(false);
+    }
+  };
+
+  const handleApproveLog = async () => {
+    if (!logId) return;
+    setIsApproving(true);
+    try {
+      const { error } = await supabase
+        .from("logs")
+        .update({ supervisor_approved: true })
+        .eq("id", logId);
+      if (error) throw error;
+      setIsApproved(true);
+      toast({
+        title: "Log approved!",
+        description: "This log is now visible to the assessing lecturer.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: getUserFriendlyError(error),
+        variant: "destructive",
+      });
+    } finally {
+      setIsApproving(false);
     }
   };
 
@@ -345,18 +375,39 @@ const ReviewLog = () => {
                       </div>
                     ))}
 
-                    <Button
-                      onClick={handleSaveRemarks}
-                      disabled={isSavingRemarks}
-                      className="bg-gradient-primary hover:opacity-90"
-                    >
-                      {isSavingRemarks ? (
-                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    <div className="flex gap-3">
+                      <Button
+                        onClick={handleSaveRemarks}
+                        disabled={isSavingRemarks}
+                        className="bg-gradient-primary hover:opacity-90"
+                      >
+                        {isSavingRemarks ? (
+                          <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        ) : (
+                          <Save className="w-4 h-4 mr-2" />
+                        )}
+                        Save Remarks
+                      </Button>
+                      {!isApproved ? (
+                        <Button
+                          onClick={handleApproveLog}
+                          disabled={isApproving}
+                          className="bg-success hover:bg-success/90 text-success-foreground"
+                        >
+                          {isApproving ? (
+                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                          ) : (
+                            <ShieldCheck className="w-4 h-4 mr-2" />
+                          )}
+                          Approve & Forward to Lecturer
+                        </Button>
                       ) : (
-                        <Save className="w-4 h-4 mr-2" />
+                        <Badge className="bg-success/10 text-success border-0 h-10 px-4 flex items-center">
+                          <CheckCircle2 className="w-4 h-4 mr-2" />
+                          Approved
+                        </Badge>
                       )}
-                      Save Remarks
-                    </Button>
+                    </div>
                   </div>
                 ) : (
                   // Fallback: show content if no structured entries
