@@ -21,6 +21,8 @@ import {
   MessageSquare,
   Clock,
   Save,
+  CheckCircle2,
+  ShieldCheck,
 } from "lucide-react";
 import { format } from "date-fns";
 
