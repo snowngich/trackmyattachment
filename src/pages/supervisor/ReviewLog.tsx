@@ -140,6 +140,9 @@ const ReviewLog = () => {
     fetchData();
   }, [logId]);
 
+  const [isApproving, setIsApproving] = useState(false);
+  const [isApproved, setIsApproved] = useState(false);
+
   const handleSaveRemarks = async () => {
     setIsSavingRemarks(true);
     try {
@@ -166,6 +169,31 @@ const ReviewLog = () => {
       });
     } finally {
       setIsSavingRemarks(false);
+    }
+  };
+
+  const handleApproveLog = async () => {
+    if (!logId) return;
+    setIsApproving(true);
+    try {
+      const { error } = await supabase
+        .from("logs")
+        .update({ supervisor_approved: true })
+        .eq("id", logId);
+      if (error) throw error;
+      setIsApproved(true);
+      toast({
+        title: "Log approved!",
+        description: "This log is now visible to the assessing lecturer.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: getUserFriendlyError(error),
+        variant: "destructive",
+      });
+    } finally {
+      setIsApproving(false);
     }
   };
 
