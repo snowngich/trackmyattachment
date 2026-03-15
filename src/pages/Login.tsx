@@ -32,8 +32,9 @@ const Login = () => {
   const { toast } = useToast();
 
   // Wait for roles to load after sign-in, then redirect
+  // Only redirect when the user actually has the selected role
   useEffect(() => {
-    if (pendingRedirectRole && userRoles.length > 0) {
+    if (pendingRedirectRole && userRoles.length > 0 && userRoles.includes(pendingRedirectRole)) {
       navigate(getRoleDashboardPath(pendingRedirectRole));
       setPendingRedirectRole(null);
     }
