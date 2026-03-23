@@ -38,8 +38,97 @@ import { toast } from "@/hooks/use-toast";
  
  const StudentLogs = () => {
    const [logs, setLogs] = useState<Log[]>([]);
-   const [feedback, setFeedback] = useState<Record<string, Feedback[]>>({});
-   const [isLoading, setIsLoading] = useState(true);
+  const [feedback, setFeedback] = useState<Record<string, Feedback[]>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportPdf = async () => {
+    setIsExporting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Fetch profile
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("full_name, student_reg_number")
+        .eq("user_id", user.id)
+        .single();
+
+      // Fetch attachment with company/department info
+      const { data: attachmentData } = await supabase
+        .from("attachments")
+        .select("id, start_date, end_date, supervisor_name, lecturer_name, company_id, department_id")
+        .eq("student_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (!attachmentData) {
+        toast({ title: "No attachment found", description: "Set up an attachment first.", variant: "destructive" });
+        return;
+      }
+
+      // Fetch company & department names
+      const [companyRes, deptRes] = await Promise.all([
+        supabase.from("organizations").select("name").eq("id", attachmentData.company_id).single(),
+        attachmentData.department_id
+          ? supabase.from("departments").select("name").eq("id", attachmentData.department_id).single()
+          : Promise.resolve({ data: null }),
+      ]);
+
+      // Fetch all logs with entries
+      const { data: logData } = await supabase
+        .from("logs")
+        .select("id, week_number, content, submitted_at, supervisor_approved")
+        .eq("attachment_id", attachmentData.id)
+        .order("week_number", { ascending: true });
+
+      if (!logData || logData.length === 0) {
+        toast({ title: "No logs to export", description: "Create some log entries first.", variant: "destructive" });
+        return;
+      }
+
+      // Fetch all log entries
+      const logIds = logData.map((l) => l.id);
+      const { data: entriesData } = await supabase
+        .from("log_entries")
+        .select("*")
+        .in("log_id", logIds)
+        .order("entry_date", { ascending: true });
+
+      const entriesByLog: Record<string, any[]> = {};
+      (entriesData || []).forEach((e) => {
+        if (!entriesByLog[e.log_id]) entriesByLog[e.log_id] = [];
+        entriesByLog[e.log_id].push(e);
+      });
+
+      generateLogPdf({
+        student_name: profileData?.full_name || "Unknown",
+        reg_number: profileData?.student_reg_number || null,
+        attachment: {
+          company_name: companyRes.data?.name || "Unknown",
+          department_name: deptRes.data?.name || null,
+          start_date: attachmentData.start_date,
+          end_date: attachmentData.end_date,
+          supervisor_name: attachmentData.supervisor_name,
+          lecturer_name: attachmentData.lecturer_name,
+        },
+        logs: logData.map((l) => ({
+          ...l,
+          entries: entriesByLog[l.id] || [],
+        })),
+        feedback: {},
+      });
+
+      toast({ title: "PDF exported", description: "Your logbook has been downloaded." });
+    } catch (err) {
+      console.error(err);
+      toast({ title: "Export failed", description: "Could not generate PDF.", variant: "destructive" });
+    } finally {
+      setIsExporting(false);
+    }
+  };
  
    useEffect(() => {
      const fetchData = async () => {
