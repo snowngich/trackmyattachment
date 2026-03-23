@@ -1,19 +1,23 @@
- import { useEffect, useState } from "react";
- import { Link } from "react-router-dom";
- import { supabase } from "@/integrations/supabase/client";
- import DashboardLayout from "@/components/layout/DashboardLayout";
- import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
- import { Button } from "@/components/ui/button";
- import { Badge } from "@/components/ui/badge";
- import { 
-   Plus, 
-   FileText,
-   Clock,
-   CheckCircle2,
-   MessageSquare,
-   ChevronRight
- } from "lucide-react";
- import { format } from "date-fns";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import DashboardLayout from "@/components/layout/DashboardLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Plus, 
+  FileText,
+  Clock,
+  CheckCircle2,
+  MessageSquare,
+  ChevronRight,
+  Download,
+  Loader2
+} from "lucide-react";
+import { format } from "date-fns";
+import { generateLogPdf } from "@/lib/generate-log-pdf";
+import { toast } from "@/hooks/use-toast";
  
  interface Log {
    id: string;
