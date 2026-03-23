@@ -64,7 +64,7 @@ const CoordinatorStudents = () => {
             student_name: profile?.full_name || "Unknown",
             reg_number: profile?.student_reg_number || null,
             company_name: companyMap.get(a.company_id) || "Unknown",
-            department_name: a.department_id ? deptMap.get(a.department_id) || null : null,
+            department_name: a.department_id ? (deptMap.get(a.department_id) ?? null) : null,
             supervisor_name: a.supervisor_name || null,
             status: a.status,
             start_date: a.start_date,

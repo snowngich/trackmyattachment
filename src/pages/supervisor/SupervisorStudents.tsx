@@ -61,7 +61,7 @@ const SupervisorStudents = () => {
             student_id: a.student_id,
             student_name: profileMap.get(a.student_id) || "Unknown",
             company_name: companyMap.get(a.company_id) || "Unknown",
-            department_name: a.department_id ? deptMap.get(a.department_id) || null : null,
+            department_name: a.department_id ? (deptMap.get(a.department_id) || null) : null,
             status: a.status,
             start_date: a.start_date,
             end_date: a.end_date,
