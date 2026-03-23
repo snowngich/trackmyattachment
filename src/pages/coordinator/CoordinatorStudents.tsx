@@ -48,13 +48,13 @@ const CoordinatorStudents = () => {
         const [profilesRes, companiesRes, deptsRes, logsRes] = await Promise.all([
           supabase.from("profiles").select("user_id, full_name, student_reg_number").in("user_id", studentIds),
           supabase.from("organizations").select("id, name").in("id", companyIds),
-          deptIds.length > 0 ? supabase.from("departments").select("id, name").in("id", deptIds) : Promise.resolve({ data: [] }),
+          deptIds.length > 0 ? supabase.from("departments").select("id, name").in("id", deptIds) : Promise.resolve({ data: [] as { id: string; name: string }[] }),
           supabase.from("logs").select("id, attachment_id, supervisor_approved").in("attachment_id", attachmentIds).not("submitted_at", "is", null),
         ]);
 
-        const profileMap = new Map(profilesRes.data?.map((p) => [p.user_id, p]) || []);
-        const companyMap = new Map(companiesRes.data?.map((c) => [c.id, c.name]) || []);
-        const deptMap = new Map(deptsRes.data?.map((d) => [d.id, d.name]) || []);
+        const profileMap = new Map((profilesRes.data || []).map((p) => [p.user_id, p] as const));
+        const companyMap = new Map((companiesRes.data || []).map((c) => [c.id, c.name] as const));
+        const deptMap = new Map((deptsRes.data || []).map((d) => [d.id, d.name] as const));
 
         setStudents(attachments.map((a) => {
           const profile = profileMap.get(a.student_id);
