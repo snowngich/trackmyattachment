@@ -36,8 +36,9 @@ interface NavItem {
 }
 
 const getNavItems = (role: AppRole): NavItem[] => {
+  const rolePrefix = role === "coordinator" ? "coordinator" : role;
   const baseItems: NavItem[] = [
-    { label: "Dashboard", href: `/${role === "coordinator" ? "coordinator" : role}`, icon: <Home className="w-5 h-5" /> },
+    { label: "Dashboard", href: `/${rolePrefix}`, icon: <Home className="w-5 h-5" /> },
   ];
 
   switch (role) {
@@ -52,6 +53,7 @@ const getNavItems = (role: AppRole): NavItem[] => {
         ...baseItems,
         { label: "Students", href: "/supervisor/students", icon: <Users className="w-5 h-5" /> },
         { label: "Review Logs", href: "/supervisor/logs", icon: <FileText className="w-5 h-5" /> },
+        { label: "Settings", href: "/supervisor/settings", icon: <Settings className="w-5 h-5" /> },
       ];
     case "coordinator":
       return [
@@ -60,6 +62,7 @@ const getNavItems = (role: AppRole): NavItem[] => {
         { label: "Student Logs", href: "/coordinator/logs", icon: <FileText className="w-5 h-5" /> },
         { label: "Placements", href: "/coordinator/placements", icon: <ClipboardList className="w-5 h-5" /> },
         { label: "Reports", href: "/coordinator/reports", icon: <BarChart3 className="w-5 h-5" /> },
+        { label: "Settings", href: "/coordinator/settings", icon: <Settings className="w-5 h-5" /> },
       ];
     case "admin":
       return [
@@ -76,18 +79,13 @@ const getNavItems = (role: AppRole): NavItem[] => {
 };
 
 const getProfilePath = (role: AppRole) => {
-  switch (role) {
-    case "student": return "/student/profile";
-    default: return `/${role === "coordinator" ? "coordinator" : role}`;
-  }
+  const rolePrefix = role === "coordinator" ? "coordinator" : role;
+  return `/${rolePrefix}/profile`;
 };
 
 const getSettingsPath = (role: AppRole) => {
-  switch (role) {
-    case "student": return "/student/settings";
-    case "admin": return "/admin/settings";
-    default: return `/${role === "coordinator" ? "coordinator" : role}`;
-  }
+  const rolePrefix = role === "coordinator" ? "coordinator" : role;
+  return `/${rolePrefix}/settings`;
 };
 
 interface DashboardLayoutProps {
