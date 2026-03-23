@@ -191,12 +191,24 @@ import { toast } from "@/hooks/use-toast";
                Document your weekly activities and learnings
              </p>
            </div>
-           <Link to="/student/logs/new">
-             <Button className="bg-gradient-primary hover:opacity-90">
-               <Plus className="w-4 h-4 mr-2" />
-               New Log Entry
-             </Button>
-           </Link>
+          <div className="flex gap-2">
+            {logs.length > 0 && (
+              <Button variant="outline" onClick={handleExportPdf} disabled={isExporting}>
+                {isExporting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Download className="w-4 h-4 mr-2" />
+                )}
+                Export PDF
+              </Button>
+            )}
+            <Link to="/student/logs/new">
+              <Button className="bg-gradient-primary hover:opacity-90">
+                <Plus className="w-4 h-4 mr-2" />
+                New Log Entry
+              </Button>
+            </Link>
+          </div>
          </div>
  
          {isLoading ? (
