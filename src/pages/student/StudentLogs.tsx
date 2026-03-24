@@ -186,9 +186,9 @@ import { toast } from "@/hooks/use-toast";
        <div className="space-y-6">
          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
            <div>
-             <h1 className="text-2xl lg:text-3xl font-display font-bold">Weekly Logs</h1>
-             <p className="text-muted-foreground mt-1">
-               Document your weekly activities and learnings
+              <h1 className="text-2xl lg:text-3xl font-display font-bold">Daily Logs</h1>
+              <p className="text-muted-foreground mt-1">
+                Document your daily activities and learnings
              </p>
            </div>
           <div className="flex gap-2">

@@ -15,8 +15,6 @@ import {
   Send,
   Upload,
   Loader2,
-  Plus,
-  Trash2,
 } from "lucide-react";
 
 interface Attachment {
@@ -24,33 +22,18 @@ interface Attachment {
   company: { name: string };
 }
 
-interface LogEntry {
-  id: string;
-  entry_date: string;
-  time_from: string;
-  time_to: string;
-  activity: string;
-  problem_faced: string;
-  lesson_learnt: string;
-}
-
-const emptyEntry = (): LogEntry => ({
-  id: crypto.randomUUID(),
-  entry_date: new Date().toISOString().split("T")[0],
-  time_from: "08:00",
-  time_to: "17:00",
-  activity: "",
-  problem_faced: "",
-  lesson_learnt: "",
-});
-
 const NewLog = () => {
-  const [weekNumber, setWeekNumber] = useState(1);
-  const [entries, setEntries] = useState<LogEntry[]>([emptyEntry()]);
+  const [entryDate, setEntryDate] = useState(new Date().toISOString().split("T")[0]);
+  const [timeFrom, setTimeFrom] = useState("08:00");
+  const [timeTo, setTimeTo] = useState("17:00");
+  const [activity, setActivity] = useState("");
+  const [problemFaced, setProblemFaced] = useState("");
+  const [lessonLearnt, setLessonLearnt] = useState("");
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const [files, setFiles] = useState<File[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingAttachment, setIsLoadingAttachment] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -70,37 +53,12 @@ const NewLog = () => {
 
       if (data) {
         setAttachment(data as unknown as Attachment);
-
-        const { data: logs } = await supabase
-          .from("logs")
-          .select("week_number")
-          .eq("attachment_id", data.id)
-          .order("week_number", { ascending: false })
-          .limit(1);
-
-        if (logs && logs.length > 0) {
-          setWeekNumber(logs[0].week_number + 1);
-        }
       }
+      setIsLoadingAttachment(false);
     };
 
     fetchAttachment();
   }, []);
-
-  const updateEntry = (id: string, field: keyof LogEntry, value: string) => {
-    setEntries((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, [field]: value } : e))
-    );
-  };
-
-  const addEntry = () => {
-    setEntries((prev) => [...prev, emptyEntry()]);
-  };
-
-  const removeEntry = (id: string) => {
-    if (entries.length <= 1) return;
-    setEntries((prev) => prev.filter((e) => e.id !== id));
-  };
 
   const handleSave = async (submit: boolean = false) => {
     if (!attachment) {
@@ -112,12 +70,10 @@ const NewLog = () => {
       return;
     }
 
-    // Validate at least one entry has activity content
-    const validEntries = entries.filter((e) => e.activity.trim());
-    if (validEntries.length === 0) {
+    if (!activity.trim()) {
       toast({
         title: "Empty log",
-        description: "Please add at least one activity entry.",
+        description: "Please describe your activity for the day.",
         variant: "destructive",
       });
       return;
@@ -126,17 +82,21 @@ const NewLog = () => {
     submit ? setIsSubmitting(true) : setIsSaving(true);
 
     try {
-      // Create the log (keep content as summary of activities)
-      const contentSummary = validEntries
-        .map((e) => e.activity)
-        .join("; ");
+      // Calculate a simple day number from attachment
+      const { data: existingLogs } = await supabase
+        .from("logs")
+        .select("id")
+        .eq("attachment_id", attachment.id);
 
+      const dayNumber = (existingLogs?.length || 0) + 1;
+
+      // Create the log
       const { data: log, error } = await supabase
         .from("logs")
         .insert({
           attachment_id: attachment.id,
-          week_number: weekNumber,
-          content: contentSummary,
+          week_number: dayNumber,
+          content: activity.trim(),
           submitted_at: submit ? new Date().toISOString() : null,
         })
         .select()
@@ -144,22 +104,20 @@ const NewLog = () => {
 
       if (error) throw error;
 
-      // Insert log entries
-      const entryInserts = validEntries.map((e) => ({
-        log_id: log.id,
-        entry_date: e.entry_date,
-        time_from: e.time_from,
-        time_to: e.time_to,
-        activity: e.activity.trim(),
-        problem_faced: e.problem_faced.trim() || null,
-        lesson_learnt: e.lesson_learnt.trim() || null,
-      }));
-
-      const { error: entriesError } = await supabase
+      // Insert log entry
+      const { error: entryError } = await supabase
         .from("log_entries")
-        .insert(entryInserts);
+        .insert({
+          log_id: log.id,
+          entry_date: entryDate,
+          time_from: timeFrom,
+          time_to: timeTo,
+          activity: activity.trim(),
+          problem_faced: problemFaced.trim() || null,
+          lesson_learnt: lessonLearnt.trim() || null,
+        });
 
-      if (entriesError) throw entriesError;
+      if (entryError) throw entryError;
 
       // Upload files if any
       if (files.length > 0 && log) {
@@ -188,7 +146,7 @@ const NewLog = () => {
       toast({
         title: submit ? "Log submitted!" : "Log saved!",
         description: submit
-          ? "Your weekly log has been submitted for review."
+          ? "Your daily log has been submitted for review."
           : "Your draft has been saved.",
       });
 
@@ -211,6 +169,16 @@ const NewLog = () => {
     }
   };
 
+  if (isLoadingAttachment) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (!attachment) {
     return (
       <DashboardLayout>
@@ -218,11 +186,10 @@ const NewLog = () => {
           <CardContent className="py-16 text-center">
             <h3 className="text-lg font-semibold mb-2">No Active Attachment</h3>
             <p className="text-muted-foreground mb-6">
-              You need an active attachment placement to create logs.
+              You need to set up your attachment first before creating logs.
             </p>
-            <Button variant="outline" onClick={() => navigate("/student")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
+            <Button variant="outline" onClick={() => navigate("/student/attachment-setup")}>
+              Set Up Attachment
             </Button>
           </CardContent>
         </Card>
@@ -232,7 +199,7 @@ const NewLog = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -242,141 +209,83 @@ const NewLog = () => {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-display font-bold">New Weekly Log</h1>
+            <h1 className="text-2xl font-display font-bold">New Daily Log</h1>
             <p className="text-muted-foreground">{attachment.company.name}</p>
           </div>
         </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Week {weekNumber} Log Sheet</CardTitle>
+            <CardTitle>Daily Log Entry</CardTitle>
             <CardDescription>
-              Fill in your daily activities, challenges, and lessons learnt
+              Record your activity, challenges, and lessons for today
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="entryDate">Date *</Label>
+                <Input
+                  id="entryDate"
+                  type="date"
+                  value={entryDate}
+                  onChange={(e) => setEntryDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timeFrom">Time From</Label>
+                <Input
+                  id="timeFrom"
+                  type="time"
+                  value={timeFrom}
+                  onChange={(e) => setTimeFrom(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timeTo">Time To</Label>
+                <Input
+                  id="timeTo"
+                  type="time"
+                  value={timeTo}
+                  onChange={(e) => setTimeTo(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="weekNumber">Week Number</Label>
-              <Input
-                id="weekNumber"
-                type="number"
-                value={weekNumber}
-                onChange={(e) => setWeekNumber(parseInt(e.target.value) || 1)}
-                min={1}
-                className="w-32"
+              <Label htmlFor="activity">Activity *</Label>
+              <Textarea
+                id="activity"
+                value={activity}
+                onChange={(e) => setActivity(e.target.value)}
+                placeholder="What did you work on today?"
+                className="min-h-[100px] resize-y"
+                maxLength={2000}
               />
             </div>
 
-            {/* Log Entries Table */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-semibold">Daily Entries</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addEntry}
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Entry
-                </Button>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="problemFaced">Problem Faced</Label>
+              <Textarea
+                id="problemFaced"
+                value={problemFaced}
+                onChange={(e) => setProblemFaced(e.target.value)}
+                placeholder="Any challenges you encountered?"
+                className="min-h-[60px] resize-y"
+                maxLength={1000}
+              />
+            </div>
 
-              {entries.map((entry, index) => (
-                <Card key={entry.id} className="border-border">
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">
-                        Entry {index + 1}
-                      </span>
-                      {entries.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 text-destructive"
-                          onClick={() => removeEntry(entry.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Date</Label>
-                        <Input
-                          type="date"
-                          value={entry.entry_date}
-                          onChange={(e) =>
-                            updateEntry(entry.id, "entry_date", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Time From</Label>
-                        <Input
-                          type="time"
-                          value={entry.time_from}
-                          onChange={(e) =>
-                            updateEntry(entry.id, "time_from", e.target.value)
-                          }
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Time To</Label>
-                        <Input
-                          type="time"
-                          value={entry.time_to}
-                          onChange={(e) =>
-                            updateEntry(entry.id, "time_to", e.target.value)
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label className="text-xs">Activity *</Label>
-                      <Textarea
-                        value={entry.activity}
-                        onChange={(e) =>
-                          updateEntry(entry.id, "activity", e.target.value)
-                        }
-                        placeholder="What did you work on?"
-                        className="min-h-[60px] resize-y"
-                        maxLength={2000}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">Problem Faced</Label>
-                        <Textarea
-                          value={entry.problem_faced}
-                          onChange={(e) =>
-                            updateEntry(entry.id, "problem_faced", e.target.value)
-                          }
-                          placeholder="Any challenges?"
-                          className="min-h-[50px] resize-y"
-                          maxLength={1000}
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">Lesson Learnt</Label>
-                        <Textarea
-                          value={entry.lesson_learnt}
-                          onChange={(e) =>
-                            updateEntry(entry.id, "lesson_learnt", e.target.value)
-                          }
-                          placeholder="Key takeaways"
-                          className="min-h-[50px] resize-y"
-                          maxLength={1000}
-                        />
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+            <div className="space-y-2">
+              <Label htmlFor="lessonLearnt">Lesson Learnt</Label>
+              <Textarea
+                id="lessonLearnt"
+                value={lessonLearnt}
+                onChange={(e) => setLessonLearnt(e.target.value)}
+                placeholder="Key takeaways from today"
+                className="min-h-[60px] resize-y"
+                maxLength={1000}
+              />
             </div>
 
             {/* File upload */}
