@@ -237,7 +237,7 @@ import { toast } from "@/hooks/use-toast";
                        </div>
                        <div className="flex-1 min-w-0">
                          <div className="flex items-center gap-2 flex-wrap">
-                           <h3 className="font-semibold">Week {log.week_number}</h3>
+                           <h3 className="font-semibold">Day {log.week_number}</h3>
                            <Badge variant={log.submitted_at ? "default" : "secondary"}>
                              {log.submitted_at ? "Submitted" : "Draft"}
                            </Badge>
