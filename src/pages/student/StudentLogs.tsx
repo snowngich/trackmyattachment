@@ -203,10 +203,10 @@ import { toast } from "@/hooks/use-toast";
               </Button>
             )}
             <Link to="/student/logs/new">
-              <Button className="bg-gradient-primary hover:opacity-90">
-                <Plus className="w-4 h-4 mr-2" />
-                New Log Entry
-              </Button>
+               <Button className="bg-gradient-primary hover:opacity-90">
+                 <Plus className="w-4 h-4 mr-2" />
+                 New Daily Log
+               </Button>
             </Link>
           </div>
          </div>
