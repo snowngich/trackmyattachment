@@ -272,16 +272,16 @@ import { toast } from "@/hooks/use-toast";
            <Card>
              <CardContent className="py-16 text-center">
                <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
-               <h3 className="text-lg font-semibold mb-2">No logs yet</h3>
-               <p className="text-muted-foreground mb-6">
-                 Start documenting your weekly activities and learnings
-               </p>
-               <Link to="/student/logs/new">
-                 <Button className="bg-gradient-primary hover:opacity-90">
-                   <Plus className="w-4 h-4 mr-2" />
-                   Create Your First Log
-                 </Button>
-               </Link>
+                <h3 className="text-lg font-semibold mb-2">No logs yet</h3>
+                <p className="text-muted-foreground mb-6">
+                  Start documenting your daily activities and learnings
+                </p>
+                <Link to="/student/logs/new">
+                  <Button className="bg-gradient-primary hover:opacity-90">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Daily Log
+                  </Button>
+                </Link>
              </CardContent>
            </Card>
          )}
