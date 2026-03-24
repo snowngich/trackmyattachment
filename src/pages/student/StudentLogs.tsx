@@ -186,9 +186,9 @@ import { toast } from "@/hooks/use-toast";
        <div className="space-y-6">
          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
            <div>
-             <h1 className="text-2xl lg:text-3xl font-display font-bold">Weekly Logs</h1>
-             <p className="text-muted-foreground mt-1">
-               Document your weekly activities and learnings
+              <h1 className="text-2xl lg:text-3xl font-display font-bold">Daily Logs</h1>
+              <p className="text-muted-foreground mt-1">
+                Document your daily activities and learnings
              </p>
            </div>
           <div className="flex gap-2">
@@ -203,10 +203,10 @@ import { toast } from "@/hooks/use-toast";
               </Button>
             )}
             <Link to="/student/logs/new">
-              <Button className="bg-gradient-primary hover:opacity-90">
-                <Plus className="w-4 h-4 mr-2" />
-                New Log Entry
-              </Button>
+               <Button className="bg-gradient-primary hover:opacity-90">
+                 <Plus className="w-4 h-4 mr-2" />
+                 New Daily Log
+               </Button>
             </Link>
           </div>
          </div>
@@ -237,7 +237,7 @@ import { toast } from "@/hooks/use-toast";
                        </div>
                        <div className="flex-1 min-w-0">
                          <div className="flex items-center gap-2 flex-wrap">
-                           <h3 className="font-semibold">Week {log.week_number}</h3>
+                           <h3 className="font-semibold">Day {log.week_number}</h3>
                            <Badge variant={log.submitted_at ? "default" : "secondary"}>
                              {log.submitted_at ? "Submitted" : "Draft"}
                            </Badge>
@@ -272,16 +272,16 @@ import { toast } from "@/hooks/use-toast";
            <Card>
              <CardContent className="py-16 text-center">
                <FileText className="w-16 h-16 mx-auto text-muted-foreground/50 mb-4" />
-               <h3 className="text-lg font-semibold mb-2">No logs yet</h3>
-               <p className="text-muted-foreground mb-6">
-                 Start documenting your weekly activities and learnings
-               </p>
-               <Link to="/student/logs/new">
-                 <Button className="bg-gradient-primary hover:opacity-90">
-                   <Plus className="w-4 h-4 mr-2" />
-                   Create Your First Log
-                 </Button>
-               </Link>
+                <h3 className="text-lg font-semibold mb-2">No logs yet</h3>
+                <p className="text-muted-foreground mb-6">
+                  Start documenting your daily activities and learnings
+                </p>
+                <Link to="/student/logs/new">
+                  <Button className="bg-gradient-primary hover:opacity-90">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Daily Log
+                  </Button>
+                </Link>
              </CardContent>
            </Card>
          )}

@@ -7,102 +7,43 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { getUserFriendlyError } from "@/lib/error-utils";
 import { Loader2, Building2, GraduationCap, Save } from "lucide-react";
-
-interface Organization {
-  id: string;
-  name: string;
-  address: string | null;
-  type: string;
-}
-
-interface SupervisorOption {
-  user_id: string;
-  full_name: string;
-}
 
 const AttachmentSetup = () => {
   const { user, profile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [companies, setCompanies] = useState<Organization[]>([]);
-  const [departments, setDepartments] = useState<{ id: string; name: string }[]>([]);
-  const [supervisors, setSupervisors] = useState<SupervisorOption[]>([]);
-  const [lecturers, setLecturers] = useState<SupervisorOption[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Profile fields
   const [studentRegNumber, setStudentRegNumber] = useState("");
   const [phone, setPhone] = useState("");
 
-  // Attachment fields
-  const [companyId, setCompanyId] = useState("");
-  const [departmentId, setDepartmentId] = useState("");
-  const [supervisorId, setSupervisorId] = useState("");
-  const [lecturerId, setLecturerId] = useState("");
+  // Attachment fields - all plain text now
+  const [companyName, setCompanyName] = useState("");
+  const [departmentName, setDepartmentName] = useState("");
+  const [supervisorName, setSupervisorName] = useState("");
+  const [lecturerName, setLecturerName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
-    const fetchData = async () => {
-      // Fetch companies, departments, supervisors, lecturers in parallel
-      const [companiesRes, deptsRes, supervisorRolesRes, lecturerRolesRes] = await Promise.all([
-        supabase.from("organizations").select("*").eq("type", "company").order("name"),
-        supabase.from("departments").select("id, name").order("name"),
-        supabase.from("user_roles").select("user_id").eq("role", "supervisor"),
-        supabase.from("user_roles").select("user_id").eq("role", "coordinator"),
-      ]);
-
-      if (companiesRes.data) setCompanies(companiesRes.data);
-      if (deptsRes.data) setDepartments(deptsRes.data);
-
-      // Fetch supervisor profiles
-      if (supervisorRolesRes.data && supervisorRolesRes.data.length > 0) {
-        const { data: supProfiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", supervisorRolesRes.data.map((r) => r.user_id));
-        if (supProfiles) setSupervisors(supProfiles);
-      }
-
-      // Fetch lecturer profiles
-      if (lecturerRolesRes.data && lecturerRolesRes.data.length > 0) {
-        const { data: lecProfiles } = await supabase
-          .from("profiles")
-          .select("user_id, full_name")
-          .in("user_id", lecturerRolesRes.data.map((r) => r.user_id));
-        if (lecProfiles) setLecturers(lecProfiles);
-      }
-
-      // Pre-fill from profile
-      if (profile) {
-        setPhone(profile.phone || "");
-        setStudentRegNumber((profile as any).student_reg_number || "");
-      }
-
-      setIsLoading(false);
-    };
-
-    fetchData();
+    if (profile) {
+      setPhone(profile.phone || "");
+      setStudentRegNumber((profile as any).student_reg_number || "");
+    }
   }, [profile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    if (!companyId || !startDate || !endDate) {
-      toast({ title: "Missing fields", description: "Please fill in all required fields.", variant: "destructive" });
+    if (!companyName.trim() || !startDate || !endDate) {
+      toast({ title: "Missing fields", description: "Please fill in company name, start date and end date.", variant: "destructive" });
       return;
     }
 
@@ -120,18 +61,36 @@ const AttachmentSetup = () => {
 
       if (profileError) throw profileError;
 
-      // Create attachment with supervisor/lecturer IDs from dropdowns
+      // Find or create company organization
+      let companyId: string;
+      const { data: existingCompany } = await supabase
+        .from("organizations")
+        .select("id")
+        .eq("name", companyName.trim())
+        .eq("type", "company")
+        .maybeSingle();
+
+      if (existingCompany) {
+        companyId = existingCompany.id;
+      } else {
+        const { data: newCompany, error: companyError } = await supabase
+          .from("organizations")
+          .insert({ name: companyName.trim(), type: "company" })
+          .select("id")
+          .single();
+        if (companyError) throw companyError;
+        companyId = newCompany.id;
+      }
+
+      // Create attachment - status is 'active' immediately so student can create logs right away
       const { error: attachmentError } = await supabase.from("attachments").insert({
         student_id: user.id,
         company_id: companyId,
-        department_id: departmentId || null,
-        supervisor_id: supervisorId || null,
-        coordinator_id: lecturerId || null,
-        supervisor_name: supervisors.find((s) => s.user_id === supervisorId)?.full_name || null,
-        lecturer_name: lecturers.find((l) => l.user_id === lecturerId)?.full_name || null,
+        supervisor_name: supervisorName.trim() || null,
+        lecturer_name: lecturerName.trim() || null,
         start_date: startDate,
         end_date: endDate,
-        status: "pending",
+        status: "active",
       });
 
       if (attachmentError) throw attachmentError;
@@ -139,27 +98,17 @@ const AttachmentSetup = () => {
       await refreshProfile();
 
       toast({
-        title: "Attachment details saved!",
-        description: "Your attachment has been registered. It will be reviewed shortly.",
+        title: "Attachment saved!",
+        description: "Your attachment is active. You can now start creating daily logs.",
       });
 
-      navigate("/student");
+      navigate("/student/logs/new");
     } catch (error: any) {
       toast({ title: "Error", description: getUserFriendlyError(error), variant: "destructive" });
     } finally {
       setIsSaving(false);
     }
   };
-
-  if (isLoading) {
-    return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      </DashboardLayout>
-    );
-  }
 
   return (
     <DashboardLayout>
@@ -208,63 +157,23 @@ const AttachmentSetup = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Company / Organization *</Label>
-                <Select value={companyId} onValueChange={setCompanyId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select company" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card">
-                    {companies.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name} {c.address ? `- ${c.address}` : ""}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="companyName">Company / Organization *</Label>
+                <Input id="companyName" value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Type company name" required />
               </div>
 
-              {departments.length > 0 && (
-                <div className="space-y-2">
-                  <Label>Department</Label>
-                  <Select value={departmentId} onValueChange={setDepartmentId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select department (optional)" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card">
-                      {departments.map((d) => (
-                        <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label htmlFor="departmentName">Department</Label>
+                <Input id="departmentName" value={departmentName} onChange={(e) => setDepartmentName(e.target.value)} placeholder="Type department name (optional)" />
+              </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Supervisor *</Label>
-                  <Select value={supervisorId} onValueChange={setSupervisorId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select supervisor" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card">
-                      {supervisors.map((s) => (
-                        <SelectItem key={s.user_id} value={s.user_id}>{s.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="supervisorName">Supervisor Name</Label>
+                  <Input id="supervisorName" value={supervisorName} onChange={(e) => setSupervisorName(e.target.value)} placeholder="Type supervisor's full name" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Assessing Lecturer</Label>
-                  <Select value={lecturerId} onValueChange={setLecturerId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select lecturer (optional)" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card">
-                      {lecturers.map((l) => (
-                        <SelectItem key={l.user_id} value={l.user_id}>{l.full_name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="lecturerName">Assessing Lecturer</Label>
+                  <Input id="lecturerName" value={lecturerName} onChange={(e) => setLecturerName(e.target.value)} placeholder="Type lecturer's full name" />
                 </div>
               </div>
 
@@ -285,7 +194,7 @@ const AttachmentSetup = () => {
             {isSaving ? (
               <><Loader2 className="w-4 h-4 animate-spin mr-2" />Saving...</>
             ) : (
-              <><Save className="w-4 h-4 mr-2" />Save Attachment Details</>
+              <><Save className="w-4 h-4 mr-2" />Save & Start Logging</>
             )}
           </Button>
         </form>
