@@ -46,13 +46,22 @@ const NewLog = () => {
 
       const { data } = await supabase
         .from("attachments")
-        .select("id, company:company_id(name)")
+        .select("id, company_id")
         .eq("student_id", user.id)
         .eq("status", "active")
         .maybeSingle();
 
       if (data) {
-        setAttachment(data as unknown as Attachment);
+        // Fetch company name separately to avoid join issues
+        let companyName = "Your Company";
+        const { data: org } = await supabase
+          .from("organizations")
+          .select("name")
+          .eq("id", data.company_id)
+          .maybeSingle();
+        if (org) companyName = org.name;
+
+        setAttachment({ id: data.id, company: { name: companyName } });
       }
       setIsLoadingAttachment(false);
     };
